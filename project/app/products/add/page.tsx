@@ -3,9 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useState, use, useEffect } from 'react';
-
-type Props = { params: Promise<{ id: string }> };
+import { useState } from 'react';
 
 interface FormData {
   name: string;
@@ -14,8 +12,7 @@ interface FormData {
   badge?: string;
 }
 
-export default function UpdateProductPage({ params }: Props) {
-  const { id } = use(params);
+export default function AddProductPage() {
   const router = useRouter();
   const [success, setSuccess] = useState(false);
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset, setError: setFormError } = useForm<FormData>({
@@ -27,40 +24,14 @@ export default function UpdateProductPage({ params }: Props) {
     }
   });
 
-  useEffect(() => {
-    async function fetchProduct() {
-      try {
-        const response = await fetch(`/api/products/${id}`);
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Produit introuvable');
-        }
-
-        const product = await response.json();
-        reset({
-          name: product.name,
-          price: String(product.price),
-          category: product.category,
-          badge: product.badge || ''
-        });
-      } catch (err) {
-        setFormError('root', {
-          message: err instanceof Error ? err.message : 'Erreur lors du chargement'
-        });
-      }
-    }
-
-    fetchProduct();
-  }, [id]);
-
   const onSubmit = async (data: FormData) => {
     try {
       const response = await fetch('/api/products', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          id: Number(id),
           name: data.name.trim(),
           price: data.price,
           category: data.category,
@@ -70,12 +41,20 @@ export default function UpdateProductPage({ params }: Props) {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Erreur lors de la mise à jour');
+        throw new Error(error.error || 'Erreur lors de l\'ajout du produit');
       }
 
+      const result = await response.json();
+      console.log('Produit ajouté:', result);
+      
       setSuccess(true);
-      setTimeout(() => router.push('/products'), 2000);
+      reset();
+      
+      setTimeout(() => {
+        router.push('/products');
+      }, 2000);
     } catch (err) {
+      console.error('Erreur:', err);
       setFormError('root', {
         message: err instanceof Error ? err.message : 'Une erreur est survenue'
       });
@@ -90,13 +69,13 @@ export default function UpdateProductPage({ params }: Props) {
         <Link href="/products" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
           ← Retour aux produits
         </Link>
-        <h1 className="text-3xl font-medium text-gray-900 mt-4">Modifier le produit</h1>
-        <p className="text-sm text-gray-500 mt-1">Remplissez le formulaire pour modifier le produit</p>
+        <h1 className="text-3xl font-medium text-gray-900 mt-4">Ajouter un produit</h1>
+        <p className="text-sm text-gray-500 mt-1">Remplissez le formulaire pour ajouter un nouveau produit</p>
       </div>
 
       {success && (
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-800 font-medium">✓ Produit modifié avec succès!</p>
+          <p className="text-green-800 font-medium">✓ Produit ajouté avec succès!</p>
           <p className="text-green-700 text-sm mt-1">Redirection vers la liste des produits...</p>
         </div>
       )}
@@ -109,7 +88,8 @@ export default function UpdateProductPage({ params }: Props) {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
-
+        
+        {/* Nom du produit */}
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-900 mb-2">
             Nom du produit *
@@ -122,7 +102,7 @@ export default function UpdateProductPage({ params }: Props) {
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors disabled:bg-gray-50 ${
               errors.name ? 'border-red-500' : 'border-gray-300'
             }`}
-            {...register('name', {
+            {...register('name', { 
               required: 'Le nom du produit est requis',
               minLength: { value: 1, message: 'Le nom ne peut pas être vide' }
             })}
@@ -130,6 +110,7 @@ export default function UpdateProductPage({ params }: Props) {
           {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>}
         </div>
 
+        {/* Prix */}
         <div>
           <label htmlFor="price" className="block text-sm font-medium text-gray-900 mb-2">
             Prix (€) *
@@ -144,14 +125,18 @@ export default function UpdateProductPage({ params }: Props) {
             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors disabled:bg-gray-50 ${
               errors.price ? 'border-red-500' : 'border-gray-300'
             }`}
-            {...register('price', {
+            {...register('price', { 
               required: 'Le prix est requis',
-              validate: (value) => Number(value) > 0 ? true : 'Le prix doit être positif'
+              validate: (value) => {
+                const num = Number(value);
+                return num > 0 ? true : 'Le prix doit être positif';
+              }
             })}
           />
           {errors.price && <p className="text-red-600 text-sm mt-1">{errors.price.message}</p>}
         </div>
 
+        {/* Catégorie */}
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-gray-900 mb-2">
             Catégorie *
@@ -168,6 +153,7 @@ export default function UpdateProductPage({ params }: Props) {
           </select>
         </div>
 
+        {/* Badge */}
         <div>
           <label htmlFor="badge" className="block text-sm font-medium text-gray-900 mb-2">
             Badge (optionnel)
@@ -183,13 +169,14 @@ export default function UpdateProductPage({ params }: Props) {
           <p className="text-xs text-gray-500 mt-1">Laissez vide si pas de badge</p>
         </div>
 
+        {/* Boutons */}
         <div className="flex gap-4 pt-4 border-t border-gray-200">
           <button
             type="submit"
             disabled={isSubmitting || success}
             className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-2.5 rounded-lg transition-colors"
           >
-            {isSubmitting ? 'En cours...' : success ? 'Produit modifié!' : 'Modifier le produit'}
+            {isSubmitting ? 'En cours...' : success ? 'Produit ajouté!' : 'Ajouter le produit'}
           </button>
           <Link
             href="/products"

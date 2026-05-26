@@ -1,0 +1,8 @@
+[
+  { "id": 1, "name": "Casque Audio Pro", "price": 129, "category": "electronique", "badge": "Nouveau" },
+  { "id": 2, "name": "T-shirt Coton Bio", "price": 34, "category": "vetements", "badge": null },
+  { "id": 3, "name": "Lampe de Bureau", "price": 59, "category": "maison", "badge": "Soldes" },
+  { "id": 4, "name": "Clavier Mécanique", "price": 89, "category": "electronique", "badge": null },
+  { "id": 5, "name": "Veste en Lin", "price": 79, "category": "vetements", "badge": "Nouveau" },
+  { "id": 6, "name": "Carafe en Verre", "price": 24, "category": "maison", "badge": null }
+]

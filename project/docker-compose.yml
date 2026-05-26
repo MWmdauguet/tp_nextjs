@@ -5,3 +5,9 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+    volumes:
+      - nextjs_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  nextjs_data:
