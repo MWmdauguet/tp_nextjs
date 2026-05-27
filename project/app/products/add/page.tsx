@@ -45,7 +45,6 @@ export default function AddProductPage() {
       }
 
       const result = await response.json();
-      console.log('Produit ajouté:', result);
       
       setSuccess(true);
       reset();

@@ -2,11 +2,13 @@
     {
         "id": 1,
         "email": "dauguet.mathis@gmail.com",
-        "password": "password"
+        "password": "password",
+        "role": "user"
     },
     {
         "id": 2,
         "email": "john.doe@gmail.com",
-        "password": "password"
+        "password": "password",
+        "role": "admin"
     }
 ]
